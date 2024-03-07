@@ -1,4 +1,4 @@
-name: co2
+name: predictionrl
 
 channels:
   - nvidia

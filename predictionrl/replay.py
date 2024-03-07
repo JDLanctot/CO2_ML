@@ -3,7 +3,7 @@ from collections import namedtuple, deque
 from typing import Tuple
 import torch
 
-from co2.problem import GraphLearningProblem
+from predictionrl.problem import GraphLearningProblem
 
 __all__ = []
 __all__.extend([

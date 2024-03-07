@@ -5,9 +5,9 @@ import torch
 from more_itertools import chunked
 from tqdm import tqdm
 
-from co2.problem import GraphLearningProblem
-from co2.pinet import PiNet
-from co2.qnet import QNet
+from predictionrl.problem import GraphLearningProblem
+from predictionrl.pinet import PiNet
+from predictionrl.qnet import QNet
 
 __all__ = []
 __all__.extend([

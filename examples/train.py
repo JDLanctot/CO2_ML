@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 import torch
 from simple_parsing import field, ArgumentParser
 
-from co2.trainer import Trainer
-from co2.util import set_seed, init_weights
+from predictionrl.trainer import Trainer
+from predictionrl.util import set_seed, init_weights
 import shutil
 
 # may improve speed of certain cuda operations

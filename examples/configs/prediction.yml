@@ -1,4 +1,4 @@
-prob: co2
+prob: prediction
 device: cuda
 net:
   depth: 5

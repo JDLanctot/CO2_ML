@@ -10,12 +10,12 @@ from torch.nn.utils import clip_grad_norm_
 from tqdm import tqdm
 from functools import partial
 
-from co2.agent import Agent
-from co2.params import TrainParams
-from co2.problem import GraphLearningProblem
-from co2.pinet import PiNet
-from co2.qnet import QNet
-from co2.replay import ReplayBuffer
+from predictionrl.agent import Agent
+from predictionrl.params import TrainParams
+from predictionrl.problem import GraphLearningProblem
+from predictionrl.pinet import PiNet
+from predictionrl.qnet import QNet
+from predictionrl.replay import ReplayBuffer
 
 __all__ = []
 __all__.extend([

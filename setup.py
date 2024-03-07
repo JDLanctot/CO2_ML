@@ -3,7 +3,7 @@
 import setuptools
 from distutils.core import setup
 
-pkg_name = 'co2'
+pkg_name = 'predictionrl'
 author = "Eshan Merali, Jordan Lanctot, Junyeong Kim"
 author_email = "jordan.lanctot@torontomu.ca"
 
@@ -22,7 +22,7 @@ install_requires = ['abstractcp',
 if __name__ == '__main__':
     setup(
         name=pkg_name.lower(),
-        description="CO2 Machine Learning",
+        description="Prediction Reinforcement Learning",
         author=author,
         author_email=author_email,
         packages=setuptools.find_packages(),
