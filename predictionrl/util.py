@@ -8,7 +8,8 @@ from scipy.io import loadmat, savemat
 import torch
 from typing import List, Dict
 
-__all__ = ['init_weights', 'set_seed', 'set_mpl']
+__all__ = ['init_weights', 'set_seed', 'set_mpl', 'parse_data', 'extract_series',
+           'get_ids', 'get_data_dict', 'data_to_dictionary']
 
 def init_weights(module):
     """ Set all weights to a small, uniform range. Set all biases to zero. """
