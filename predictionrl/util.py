@@ -4,8 +4,9 @@ import random
 import numpy as np
 import pandas as pd
 import matplotlib as mpl
-from scipy.io import savemat
+from scipy.io import loadmat, savemat
 import torch
+from typing import List, Dict
 
 __all__ = ['init_weights', 'set_seed', 'set_mpl']
 
@@ -26,7 +27,7 @@ def init_weights(module):
     module.apply(_init_weights)
 
 
-def set_seed(seed):
+def set_seed(seed: int) -> None:
     os.environ['PYTHONHASHSEED'] = str(seed)
     random.seed(seed)
     torch.manual_seed(seed)
@@ -34,7 +35,7 @@ def set_seed(seed):
     np.random.seed(seed)
     # torch.use_deterministic_algorithms(True)
 
-def set_mpl():
+def set_mpl() -> None:
     # change defaults to be less ugly for matplotlib
     mpl.rc('xtick', labelsize=14, color="#222222")
     mpl.rc('ytick', labelsize=14, color="#222222")
@@ -47,7 +48,7 @@ def set_mpl():
     mpl.rc('axes', linewidth=1, edgecolor="#222222", labelcolor="#222222")
     mpl.rc('text', usetex=False, color="#222222")
 
-def parse_data(folder_path):
+def parse_data(folder_path: str) -> None:
     # Initialize empty lists to hold the data for each column and additional columns for tracking
     columns = ['MarketId', 'MarketName', 'ContractId', 'ContractName', 'HistoryDateET',
                'OpenSharePrice', 'CloseSharePrice', 'LowSharePrice', 'HighSharePrice',
@@ -110,4 +111,47 @@ def parse_data(folder_path):
     # Save the data arrays into a .mat file
     savemat('data_python.mat', data)
 
+#Function for getting only data associated with a particular contract id
+def extract_series(k: int, price_series: np.ndarray, contract_series: np.ndarray) -> np.ndarray:
+    return price_series[contract_series == k]
 
+#Function for getting how large of a contract set each contract id is in
+# def n_contracts(k: int, market_series: np.ndarray, contract_series: np.ndarray, series_len: int) -> int:
+#     market_id = market_series[contract_series == k][0]
+#     return int(len(contract_series[market_series == market_id])/series_len)
+
+#Get only a subset based on market contract number
+# def filter_sets(data: Dict, Ns: np.ndarray, unique_ids: np.ndarray, condition: int) -> Tuple[Dict, np.ndarray]:
+#     if condition <= 2:
+#         filter_idx = [unique_ids[k] for k in range(len(unique_ids)) if Ns[k] == condition]
+#         filter_Ns = [Ns[k] for k in range(len(unique_ids)) if Ns[k] == condition]
+#     else:
+#         filter_idx = [unique_ids[k] for k in range(len(unique_ids)) if Ns[k] >= condition]
+#         filter_Ns = [Ns[k] for k in range(len(unique_ids)) if Ns[k] >= condition]
+#     data = {k: data[k] for k in filter_idx}
+#     return data, np.array(filter_Ns)
+
+#Get unique contract ids from Matlab data file
+def get_ids(contract_series: np.ndarray) -> List:
+    return list(map(int, np.unique(contract_series)))
+
+#Save the data corresponding to each contract to a keyed data structure
+def get_data_dict(unique_ids: List, price_series: np.ndarray, contract_series: np.ndarray) -> Dict:
+    return {k: extract_series(k, price_series, contract_series) for k in unique_ids}
+
+#Save the number of contracts a contract is part of corresponding to each contract to a keyed data structure
+# def get_number_contracts(unique_ids: np.ndarray, market_series: np.ndarray, contract_series: np.ndarray, series_len: int) -> np.ndarray:
+#     return  np.array([n_contracts(k, market_series, contract_series, series_len) for k in unique_ids])
+
+def data_to_dictionary(filename: str) -> Dict:
+    raw_data = loadmat(filename)
+
+    # columns = ['MarketId', 'MarketName', 'ContractId', 'ContractName', 'HistoryDateET',
+    #            'OpenSharePrice', 'CloseSharePrice', 'LowSharePrice', 'HighSharePrice',
+    #            'AverageTradePrice', 'TradeVolume', 'IdSeries', 'TimeSeries']
+
+    market_series = raw_data["MarketId"]
+    contract_series = raw_data["ContractId"]
+    price_series = raw_data["CloseSharePrice"]
+
+    return get_data_dict(get_ids(contract_series), price_series, contract_series)
