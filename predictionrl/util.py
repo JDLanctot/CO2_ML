@@ -9,7 +9,7 @@ import torch
 from typing import List, Dict
 
 __all__ = ['init_weights', 'set_seed', 'set_mpl', 'parse_data', 'extract_series',
-           'get_ids', 'get_data_dict', 'data_to_dictionary']
+           'get_ids', 'get_data_dict', 'data_to_dictionary', 'dictionary_metrics']
 
 def init_weights(module):
     """ Set all weights to a small, uniform range. Set all biases to zero. """
@@ -141,18 +141,66 @@ def get_data_dict(unique_ids: List, price_series: np.ndarray, contract_series: n
     return {k: extract_series(k, price_series, contract_series) for k in unique_ids}
 
 #Save the number of contracts a contract is part of corresponding to each contract to a keyed data structure
-# def get_number_contracts(unique_ids: np.ndarray, market_series: np.ndarray, contract_series: np.ndarray, series_len: int) -> np.ndarray:
-#     return  np.array([n_contracts(k, market_series, contract_series, series_len) for k in unique_ids])
+def get_number_contracts(unique_ids: np.ndarray, market_series: np.ndarray, contract_series: np.ndarray, series_len: int) -> np.ndarray:
+    return  np.array([n_contracts(k, market_series, contract_series, series_len) for k in unique_ids])
 
 def data_to_dictionary(filename: str) -> Dict:
-    raw_data = loadmat(filename)
+    data = loadmat(filename)
 
     # columns = ['MarketId', 'MarketName', 'ContractId', 'ContractName', 'HistoryDateET',
     #            'OpenSharePrice', 'CloseSharePrice', 'LowSharePrice', 'HighSharePrice',
     #            'AverageTradePrice', 'TradeVolume', 'IdSeries', 'TimeSeries']
 
-    market_series = raw_data["MarketId"]
-    contract_series = raw_data["ContractId"]
-    price_series = raw_data["CloseSharePrice"]
+    market_series = data["MarketId"]
+    contract_series = data["ContractId"]
+    price_series = data["CloseSharePrice"]
 
     return get_data_dict(get_ids(contract_series), price_series, contract_series)
+
+def data_to_dataframe(filename: str) -> pd.DataFrame:
+    data = loadmat(filename)
+    return pd.DataFrame({
+        'MarketId': data['MarketId'][0],
+        # 'MarketName': data['MarketName'],
+        'ContractId': data['ContractId'][0],
+        # 'ContractName': data['ContractName'],
+        # 'HistoryDateET': data['HistoryDateET'][0],
+        # 'OpenSharePrice': data["OpenSharePrice"][0],
+        # 'CloseSharePrice': data["CloseSharePrice"][0],
+        # 'LowSharePrice': data["LowSharePrice"][0],
+        # 'HighSharePrice': data["HighSharePrice"][0],
+        'AverageTradePrice': data["AverageTradePrice"][0],
+        'TradeVolume': data["TradeVolume"][0],
+        # 'IdSeries': data["IdSeries"][0],
+        'TimeSeries': data["TimeSeries"][0],
+    })
+
+def dictionary_metrics(data: dict, df: pd.DataFrame) -> pd.DataFrame:
+    # contract_ids = [k for k in data.keys()]
+    means = [np.mean(s) for s in data.values()]
+    stds = [np.std(s) for s in data.values()]
+    maxs = [np.max(s) for s in data.values()]
+    mins = [np.min(s) for s in data.values()]
+    results = [np.round(s[-1]) for s in data.values()]
+
+    # Step 1: Calculate unique ContractIds per MarketId
+    unique_contracts = df.groupby('MarketId')['ContractId'].nunique().reset_index(name='N')
+
+    # Step 2: Merge this with the original DataFrame
+    contract_counts = df.drop_duplicates(['MarketId', 'ContractId']).merge(unique_contracts, on='MarketId', how='left')
+
+    # Step 3: Create DataFrame from data.keys() to preserve order
+    order_df = pd.DataFrame(list(data.keys()), columns=['ContractId'])
+
+    # Step 4: Merge to align results with the order_df; use outer join to ensure all keys are used
+    metrics_df = order_df.merge(contract_counts, on='ContractId', how='left')
+
+    # Step 5: Add the other metrics
+    metrics_df['Mean'] = means
+    metrics_df['StDev'] = stds
+    metrics_df['Max'] = maxs
+    metrics_df['Min'] = mins
+    metrics_df['Result'] = results
+
+    return metrics_df
+
