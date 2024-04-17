@@ -1,10 +1,15 @@
 from predictionrl.util import data_to_dictionary, data_to_dataframe, dictionary_metrics
-from predictionrl.modeling import model_train_features, prep_data, feature_importance_from_model, evaluate_model
+from predictionrl.processing import prep_data
+from predictionrl.modeling import model_train_features, feature_importance_from_model, evaluate_model
+from predictionrl.clustering import run_clustering
 
 def main():
     data_df = data_to_dataframe('examples\data_python.mat')
     data_dict = data_to_dictionary('examples\data_python.mat')
     metrics_df = dictionary_metrics(data_dict, data_df)
+    cluster_df = run_clustering(metrics_df, 'Mean', 'StDev', clusters=4, visualize=True)
+    import ipdb
+    ipdb.set_trace()
 
     colname = 'Result'
     cols_to_drop = ['MarketId', 'ContractId']
@@ -32,11 +37,7 @@ def main():
     # EVALUATE THE MODEL
     evaluate_model(model, train_set, test_set, colname)
     print('-'*90)
-    print(f'Here we have used the {model_type} model to make a model which predicts the {colname} based on a number of features within our dataset. Specifically, we have feature engineered lattitude and longitude to be combined into a density heatmap weighted by {colname} and used that new feature within our model to improve the results obtained by the example data pipeline. Additionally, we have made it possible to run our script via CLI which could be useful in automated pipelines. To improve this, we could accept command line arguments for the filename, column name which should be predicted, and which model should be used, and instead of showing plots, save them as files so no popup is generated -- thereby pausing the script until a user closes the figure. Lastly, I added type safety to all of the function arguments and returns to make sure some potential bugs can be caught through linting.')
-
-
-    import ipdb
-    ipdb.set_trace()
+    print(f'Here we have used the {model_type} model to make a model which predicts the {colname} based on a number of features within our dataset. Specifically, we have feature engineered descriptive statistics from a early portion of each time series and used those new features within our model to predict the outcome of the contract. Additionally, we have made it possible to run our script via CLI which could be useful in automated pipelines. To improve this, we could accept command line arguments for the filename, column name which should be predicted, and which model should be used. Lastly, I added type safety to all of the function arguments and returns to make sure some potential bugs can be caught through linting.')
 
 if __name__ == "__main__":
     main()

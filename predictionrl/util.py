@@ -27,7 +27,6 @@ def init_weights(module):
 
     module.apply(_init_weights)
 
-
 def set_seed(seed: int) -> None:
     os.environ['PYTHONHASHSEED'] = str(seed)
     random.seed(seed)
@@ -153,7 +152,7 @@ def data_to_dictionary(filename: str) -> Dict:
 
     market_series = data["MarketId"]
     contract_series = data["ContractId"]
-    price_series = data["CloseSharePrice"]
+    price_series = data["AverageTradePrice"]
 
     return get_data_dict(get_ids(contract_series), price_series, contract_series)
 
@@ -177,11 +176,11 @@ def data_to_dataframe(filename: str) -> pd.DataFrame:
 
 def dictionary_metrics(data: dict, df: pd.DataFrame) -> pd.DataFrame:
     # contract_ids = [k for k in data.keys()]
-    means = [np.mean(s) for s in data.values()]
-    stds = [np.std(s) for s in data.values()]
-    maxs = [np.max(s) for s in data.values()]
-    mins = [np.min(s) for s in data.values()]
-    results = [np.round(s[-1]) for s in data.values()]
+    means = [np.mean(s[0:int(np.floor(len(s))/2)]) for s in data.values()]
+    stds = [np.std(s[0:int(np.floor(len(s))/2)]) for s in data.values()]
+    maxs = [np.max(s[0:int(np.floor(len(s))/2)]) for s in data.values()]
+    mins = [np.min(s[0:int(np.floor(len(s))/2)]) for s in data.values()]
+    results = [np.round(s[-3]) for s in data.values()]
 
     # Step 1: Calculate unique ContractIds per MarketId
     unique_contracts = df.groupby('MarketId')['ContractId'].nunique().reset_index(name='N')
