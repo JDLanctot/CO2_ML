@@ -8,8 +8,6 @@ def main():
     data_dict = data_to_dictionary('examples\data_python.mat')
     metrics_df = dictionary_metrics(data_dict, data_df)
     cluster_df = run_clustering(metrics_df, 'Mean', 'StDev', clusters=4, visualize=True)
-    import ipdb
-    ipdb.set_trace()
 
     colname = 'Result'
     cols_to_drop = ['MarketId', 'ContractId']

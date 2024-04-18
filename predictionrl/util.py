@@ -154,11 +154,21 @@ def data_to_dictionary(filename: str) -> Dict:
     contract_series = data["ContractId"]
     price_series = data["AverageTradePrice"]
 
-    return get_data_dict(get_ids(contract_series), price_series, contract_series)
+    data_dict = get_data_dict(get_ids(contract_series), price_series, contract_series)
+
+    print('-'*90)
+    print('Contract Descriptives')
+    print(f'Number of Markets: {len(np.unique(market_series))}')
+    print(f'Number of Contracts: {len(data_dict)}')
+    print(f'Average Contract Length: {np.mean([len(s) for s in data_dict.values()])}')
+    print(f'Average Contracts per Market: {len(data_dict)/len(np.unique(market_series))}')
+
+    return data_dict
+
 
 def data_to_dataframe(filename: str) -> pd.DataFrame:
     data = loadmat(filename)
-    return pd.DataFrame({
+    data_df = pd.DataFrame({
         'MarketId': data['MarketId'][0],
         # 'MarketName': data['MarketName'],
         'ContractId': data['ContractId'][0],
@@ -174,12 +184,20 @@ def data_to_dataframe(filename: str) -> pd.DataFrame:
         'TimeSeries': data["TimeSeries"][0],
     })
 
-def dictionary_metrics(data: dict, df: pd.DataFrame) -> pd.DataFrame:
+    print('-'*90)
+    print('Dataset Descriptives')
+    print(data_df.describe())
+    print(data_df.head())
+
+    return data_df
+
+
+def dictionary_metrics(data: dict, df: pd.DataFrame, length: float = 0.5) -> pd.DataFrame:
     # contract_ids = [k for k in data.keys()]
-    means = [np.mean(s[0:int(np.floor(len(s))/2)]) for s in data.values()]
-    stds = [np.std(s[0:int(np.floor(len(s))/2)]) for s in data.values()]
-    maxs = [np.max(s[0:int(np.floor(len(s))/2)]) for s in data.values()]
-    mins = [np.min(s[0:int(np.floor(len(s))/2)]) for s in data.values()]
+    means = [np.mean(s[0:int(np.floor(len(s))*length)]) for s in data.values()]
+    stds = [np.std(s[0:int(np.floor(len(s))*length)]) for s in data.values()]
+    maxs = [np.max(s[0:int(np.floor(len(s))*length)]) for s in data.values()]
+    mins = [np.min(s[0:int(np.floor(len(s))*length)]) for s in data.values()]
     results = [np.round(s[-3]) for s in data.values()]
 
     # Step 1: Calculate unique ContractIds per MarketId
@@ -200,6 +218,11 @@ def dictionary_metrics(data: dict, df: pd.DataFrame) -> pd.DataFrame:
     metrics_df['Max'] = maxs
     metrics_df['Min'] = mins
     metrics_df['Result'] = results
+
+    print('-'*90)
+    print('Macro Parameter Descriptives')
+    print(metrics_df.describe())
+    print(metrics_df.head())
 
     return metrics_df
 
